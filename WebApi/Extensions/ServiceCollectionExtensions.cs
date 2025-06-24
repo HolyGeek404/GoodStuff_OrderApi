@@ -1,10 +1,23 @@
 
+using Azure.Identity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Identity.Web;
 using Microsoft.OpenApi.Models;
 
 namespace WebApi.Extensions;
 
 public static class ServiceCollectionExtensions
 {
+    public static IServiceCollection AddAzureConfig(this IServiceCollection services, IConfigurationManager configuration)
+    {
+        var azureAd = configuration.GetSection("AzureAd");
+
+        configuration.AddAzureKeyVault(new Uri(azureAd["KvUrl"]!), new DefaultAzureCredential());
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddMicrosoftIdentityWebApi(azureAd);
+
+        return services;
+    }
     public static IServiceCollection AddSwaggerConfig(this IServiceCollection services, IConfiguration configuration)
     {
         var tenantId = configuration.GetSection("AzureAd")["TenantId"];
